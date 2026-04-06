@@ -11,4 +11,8 @@ public class MaskUtil {
         return cep.replaceAll("(\\d{5})(\\d{3})",
                 "$1-$2");
     }
+
+    public static String remover(String valor) {
+        return valor.replaceAll("\\D", "");
+    }
 }

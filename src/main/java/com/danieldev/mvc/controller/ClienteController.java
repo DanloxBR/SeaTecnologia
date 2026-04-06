@@ -1,12 +1,13 @@
 package com.danieldev.mvc.controller;
 
+import com.danieldev.mvc.dto.ClienteDTO;
 import com.danieldev.mvc.entity.Cliente;
 import com.danieldev.mvc.service.ClienteService;
-import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -17,9 +18,8 @@ public class ClienteController {
     private ClienteService service;
 
     @PostMapping
-    public ResponseEntity<Cliente> criarCliente(@Valid @RequestBody Cliente cliente) {
-        Cliente salvo = service.salvarCliente(cliente);
-        return ResponseEntity.ok(salvo);
+    public ResponseEntity<Cliente> criarCliente(@Valid @RequestBody ClienteDTO dto) {
+        return ResponseEntity.ok(service.salvarCliente(dto));
     }
 
     @GetMapping

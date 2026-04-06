@@ -19,7 +19,7 @@ public class ClienteEmail {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Email
     @NotBlank
-    private String endereco;
+    @Email
+    private String email;
 }

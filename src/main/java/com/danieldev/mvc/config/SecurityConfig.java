@@ -1,6 +1,7 @@
 package com.danieldev.mvc.config;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -10,7 +11,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-
         auth.inMemoryAuthentication()
                 .withUser("admin")
                 .password("{noop}123qwe!@#")
@@ -29,8 +29,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .authorizeRequests()
                 .antMatchers("/h2-console/**").permitAll()
-                .antMatchers("/clientes").hasAnyRole("ADMIN", "USER")
-                .antMatchers("/clientes/**").hasRole("ADMIN")
+
+                .antMatchers(HttpMethod.POST, "/clientes").hasRole("ADMIN")
+                .antMatchers(HttpMethod.PUT, "/clientes/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.DELETE, "/clientes/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.GET, "/clientes/**").hasAnyRole("ADMIN", "USER")
+
                 .anyRequest().authenticated()
                 .and()
                 .httpBasic();

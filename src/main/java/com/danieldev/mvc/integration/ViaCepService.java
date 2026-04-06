@@ -9,7 +9,6 @@ public class ViaCepService {
 
     public ViaCepResponse buscarCep(String cep) {
         RestTemplate restTemplate = new RestTemplate();
-        String url = String.format(URL, cep.replaceAll("\\D", ""));
-        return restTemplate.getForObject(url, ViaCepResponse.class);
+        return restTemplate.getForObject(String.format(URL, cep), ViaCepResponse.class);
     }
 }
