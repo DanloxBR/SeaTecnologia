@@ -8,10 +8,10 @@ API REST desenvolvida em **Java 8 + Spring Boot**, com foco em boas práticas, v
 
 Esta aplicação permite o gerenciamento de clientes, incluindo:
 
-* Cadastro de clientes
-* Consulta de clientes
-* Atualização de dados
-* Remoção de clientes
+* Create de clientes
+* Read de clientes
+* Update de dados
+* Delete de clientes
 
 A API aplica regras de negócio como validação de CPF, integração com serviço externo de CEP e controle de permissões por perfil de usuário.
 
