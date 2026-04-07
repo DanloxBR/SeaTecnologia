@@ -26,11 +26,8 @@ public class ClienteService {
     private ViaCepService viaCepService;
 
     public ClienteResponseDTO salvarCliente(ClienteDTO dto) {
-
         Cliente cliente = mapToEntity(dto);
-
         cliente = repository.save(cliente);
-
         return toResponse(cliente);
     }
 
@@ -44,8 +41,75 @@ public class ClienteService {
     public ClienteResponseDTO buscarPorId(Long id) {
         Cliente cliente = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
-
         return toResponse(cliente);
+    }
+
+    public ClienteResponseDTO atualizarCliente(Long id, ClienteDTO dto) {
+        Cliente clienteExistente = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+        String cpf = MaskUtil.remover(dto.getCpf());
+        if (!CPFValidator.isValid(cpf)) {
+            throw new RuntimeException("CPF inválido");
+        }
+
+        repository.findByCpf(cpf).ifPresent(c -> {
+            if (!c.getId().equals(id)) {
+                throw new RuntimeException("CPF já cadastrado");
+            }
+        });
+
+        if (dto.getTelefones() == null || dto.getTelefones().isEmpty() || dto.getTelefones().size() > 5) {
+            throw new RuntimeException("Cliente deve ter entre 1 e 5 telefones");
+        }
+
+        if (dto.getEmails() == null || dto.getEmails().isEmpty()) {
+            throw new RuntimeException("Cliente deve ter ao menos 1 email");
+        }
+
+        String cep = MaskUtil.remover(dto.getEndereco().getCep());
+        ViaCepResponse viaCep = viaCepService.buscarCep(cep);
+
+        if (viaCep == null || viaCep.getLogradouro() == null) {
+            throw new RuntimeException("CEP inválido");
+        }
+
+        clienteExistente.setNome(dto.getNome());
+        clienteExistente.setCpf(cpf);
+        Endereco endereco = new Endereco();
+        endereco.setCep(cep);
+        endereco.setLogradouro(viaCep.getLogradouro());
+        endereco.setBairro(viaCep.getBairro());
+        endereco.setCidade(viaCep.getLocalidade());
+        endereco.setUf(viaCep.getUf());
+        endereco.setComplemento(dto.getEndereco().getComplemento());
+        clienteExistente.setEndereco(endereco);
+        clienteExistente.getTelefones().clear();
+        clienteExistente.getTelefones().addAll(
+                dto.getTelefones().stream().map(t -> {
+                    Telefone tel = new Telefone();
+                    tel.setNumero(MaskUtil.remover(t.getNumero()));
+                    tel.setTipo(t.getTipo());
+                    return tel;
+                }).collect(Collectors.toList())
+        );
+
+        clienteExistente.getEmails().clear();
+        clienteExistente.getEmails().addAll(
+                dto.getEmails().stream().map(e -> {
+                    ClienteEmail email = new ClienteEmail();
+                    email.setEmail(e);
+                    return email;
+                }).collect(Collectors.toList())
+        );
+        Cliente atualizado = repository.save(clienteExistente);
+        return toResponse(atualizado);
+    }
+
+    public void deletarCliente(Long id) {
+        Cliente cliente = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+
+        repository.delete(cliente);
     }
 
     private Cliente mapToEntity(ClienteDTO dto) {
