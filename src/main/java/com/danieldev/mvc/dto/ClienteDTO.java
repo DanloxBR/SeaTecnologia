@@ -13,12 +13,13 @@ public class ClienteDTO {
 
     @NotBlank
     @Size(min = 3, max = 100)
-    @Pattern(regexp = "^[A-Za-zÀ-ÿ ]+$")
+    @Pattern(regexp = "^[A-Za-zÀ-ÿ0-9 ]+$")
     private String nome;
 
     @NotBlank
     private String cpf;
 
+    @NotNull
     @Valid
     private EnderecoDTO endereco;
 

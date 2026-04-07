@@ -1,9 +1,10 @@
 package com.danieldev.mvc.controller;
 
 import com.danieldev.mvc.dto.ClienteDTO;
-import com.danieldev.mvc.entity.Cliente;
+import com.danieldev.mvc.dto.response.ClienteResponseDTO;
 import com.danieldev.mvc.service.ClienteService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,17 +19,18 @@ public class ClienteController {
     private ClienteService service;
 
     @PostMapping
-    public ResponseEntity<Cliente> criarCliente(@Valid @RequestBody ClienteDTO dto) {
-        return ResponseEntity.ok(service.salvarCliente(dto));
+    public ResponseEntity<ClienteResponseDTO> criarCliente(@Valid @RequestBody ClienteDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(service.salvarCliente(dto));
     }
 
     @GetMapping
-    public ResponseEntity<List<Cliente>> listarClientes() {
+    public ResponseEntity<List<ClienteResponseDTO>> listarClientes() {
         return ResponseEntity.ok(service.listarClientes());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Cliente> buscarCliente(@PathVariable Long id) {
+    public ResponseEntity<ClienteResponseDTO> buscarCliente(@PathVariable Long id) {
         return ResponseEntity.ok(service.buscarPorId(id));
     }
 }

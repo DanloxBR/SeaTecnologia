@@ -12,6 +12,15 @@ public class MaskUtil {
                 "$1-$2");
     }
 
+    public static String telefone(String numero) {
+        if (numero.length() == 11) {
+            return numero.replaceAll("(\\d{2})(\\d{5})(\\d{4})",
+                    "($1) $2-$3");
+        }
+        return numero.replaceAll("(\\d{2})(\\d{4})(\\d{4})",
+                "($1) $2-$3");
+    }
+
     public static String remover(String valor) {
         return valor.replaceAll("\\D", "");
     }

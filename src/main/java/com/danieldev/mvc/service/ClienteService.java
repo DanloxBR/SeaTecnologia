@@ -1,18 +1,18 @@
 package com.danieldev.mvc.service;
 
-import com.danieldev.mvc.dto.ClienteDTO;
-import com.danieldev.mvc.entity.Cliente;
-import com.danieldev.mvc.entity.ClienteEmail;
-import com.danieldev.mvc.entity.Endereco;
-import com.danieldev.mvc.entity.Telefone;
+import com.danieldev.mvc.dto.*;
+import com.danieldev.mvc.dto.response.ClienteResponseDTO;
+import com.danieldev.mvc.dto.response.EnderecoResponseDTO;
+import com.danieldev.mvc.dto.response.TelefoneResponseDTO;
+import com.danieldev.mvc.entity.*;
 import com.danieldev.mvc.integration.ViaCepResponse;
 import com.danieldev.mvc.integration.ViaCepService;
 import com.danieldev.mvc.repository.ClienteRepository;
 import com.danieldev.mvc.util.CPFValidator;
+import com.danieldev.mvc.util.MaskUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,9 +25,32 @@ public class ClienteService {
     @Autowired
     private ViaCepService viaCepService;
 
-    public Cliente salvarCliente(ClienteDTO dto) {
+    public ClienteResponseDTO salvarCliente(ClienteDTO dto) {
 
-        String cpf = dto.getCpf().replaceAll("\\D", "");
+        Cliente cliente = mapToEntity(dto);
+
+        cliente = repository.save(cliente);
+
+        return toResponse(cliente);
+    }
+
+    public List<ClienteResponseDTO> listarClientes() {
+        return repository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    public ClienteResponseDTO buscarPorId(Long id) {
+        Cliente cliente = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+
+        return toResponse(cliente);
+    }
+
+    private Cliente mapToEntity(ClienteDTO dto) {
+
+        String cpf = MaskUtil.remover(dto.getCpf());
 
         if (!CPFValidator.isValid(cpf)) {
             throw new RuntimeException("CPF inválido");
@@ -45,8 +68,10 @@ public class ClienteService {
             throw new RuntimeException("Cliente deve ter ao menos 1 email");
         }
 
-        String cep = dto.getEndereco().getCep().replaceAll("\\D", "");
+        String cep = MaskUtil.remover(dto.getEndereco().getCep());
+
         ViaCepResponse viaCep = viaCepService.buscarCep(cep);
+
         if (viaCep == null || viaCep.getLogradouro() == null) {
             throw new RuntimeException("CEP inválido");
         }
@@ -67,7 +92,7 @@ public class ClienteService {
 
         List<Telefone> telefones = dto.getTelefones().stream().map(t -> {
             Telefone tel = new Telefone();
-            tel.setNumero(t.getNumero().replaceAll("\\D", ""));
+            tel.setNumero(MaskUtil.remover(t.getNumero()));
             tel.setTipo(t.getTipo());
             return tel;
         }).collect(Collectors.toList());
@@ -82,15 +107,32 @@ public class ClienteService {
 
         cliente.setEmails(emails);
 
-        return repository.save(cliente);
+        return cliente;
     }
 
-    public List<Cliente> listarClientes() {
-        return repository.findAll();
-    }
+    private ClienteResponseDTO toResponse(Cliente cliente) {
 
-    public Cliente buscarPorId(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+        return ClienteResponseDTO.builder()
+                .id(cliente.getId())
+                .nome(cliente.getNome())
+                .cpf(MaskUtil.cpf(cliente.getCpf()))
+                .endereco(EnderecoResponseDTO.builder()
+                        .cep(MaskUtil.cep(cliente.getEndereco().getCep()))
+                        .logradouro(cliente.getEndereco().getLogradouro())
+                        .bairro(cliente.getEndereco().getBairro())
+                        .cidade(cliente.getEndereco().getCidade())
+                        .uf(cliente.getEndereco().getUf())
+                        .complemento(cliente.getEndereco().getComplemento())
+                        .build())
+                .telefones(cliente.getTelefones().stream().map(t ->
+                        TelefoneResponseDTO.builder()
+                                .numero(MaskUtil.telefone(t.getNumero()))
+                                .tipo(t.getTipo().name())
+                                .build()
+                ).collect(Collectors.toList()))
+                .emails(cliente.getEmails().stream()
+                        .map(ClienteEmail::getEmail)
+                        .collect(Collectors.toList()))
+                .build();
     }
 }

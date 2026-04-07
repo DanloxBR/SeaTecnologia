@@ -29,12 +29,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .authorizeRequests()
                 .antMatchers("/h2-console/**").permitAll()
-
                 .antMatchers(HttpMethod.POST, "/clientes").hasRole("ADMIN")
                 .antMatchers(HttpMethod.PUT, "/clientes/**").hasRole("ADMIN")
                 .antMatchers(HttpMethod.DELETE, "/clientes/**").hasRole("ADMIN")
-                .antMatchers(HttpMethod.GET, "/clientes/**").hasAnyRole("ADMIN", "USER")
-
+                .antMatchers(HttpMethod.GET, "/clientes", "/clientes/**")
+                .hasAnyRole("ADMIN", "USER")
                 .anyRequest().authenticated()
                 .and()
                 .httpBasic();

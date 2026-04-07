@@ -5,6 +5,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 
 @Entity
 @Getter
@@ -16,6 +17,7 @@ public class Telefone {
     private Long id;
 
     @NotBlank
+    @Pattern(regexp = "\\d{10,11}")
     private String numero;
 
     @Enumerated(EnumType.STRING)
